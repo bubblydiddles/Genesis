@@ -1,6 +1,10 @@
 import cv2
 import numpy as np
 import time
+import serial
+
+ser = serial.Serial("COM6", 9600)
+time.sleep(2)
 
 params = cv2.SimpleBlobDetector_Params()
 params.minThreshold = 200
@@ -65,6 +69,10 @@ while True:
     for i in keypoints:
         x=i.pt[0]; y=i.pt[1]
         print(x,y)
+        #ser.write(int(x))
+        #ser.write('\t')
+        #ser.write(int(y))
+        #ser.write('\t')
         
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
