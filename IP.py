@@ -3,8 +3,8 @@ import numpy as np
 import time
 import serial
 
-ser = serial.Serial("COM6", 9600)
-time.sleep(2)
+#ser = serial.Serial("COM6", 9600)
+#time.sleep(2)
 
 params = cv2.SimpleBlobDetector_Params()
 params.minThreshold = 200
@@ -50,6 +50,7 @@ while True:
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     mask = cv2.inRange(hsv, ll, ul)
+    cv2.imshow('mask', mask)
     res = cv2.bitwise_or(frame,frame, mask=mask)
 
     keypoints = detector.detect(mask)
