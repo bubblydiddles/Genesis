@@ -3,36 +3,16 @@ import numpy as np
 import time
 import serial
 
-#ard = serial.Serial('com7',115200)
-
-params = cv2.SimpleBlobDetector_Params()
-params.minThreshold = 200
-params.maxThreshold = 255
-    
-params.filterByArea = True
-params.minArea = 100
-params.maxArea = 30720
-    
-params.filterByCircularity = False
-params.filterByInertia = False
-params.filterByConvexity = False
-params.filterByColor = False
-params.blobColor = 255
-
-detector = cv2.SimpleBlobDetector_create(params)
 
 cam = cv2.VideoCapture(0)
 
-ll = np.array([0,172,126])
-ul = np.array([15,255,225])
+ll = np.array([0,176,109])
+ul = np.array([15,255,255])
 
 def nothing(x):
     pass
 
-bg = np.ones((480,640))
-
-cv2.namedWindow('Isolated Blob')
-cv2.namedWindow('Plot')
+cv2.namedWindow('Isolated Contour')
 
 flag = 0
 
@@ -56,10 +36,24 @@ while True:
     mask = cv2.inRange(hsv, ll, ul)
     res = cv2.bitwise_or(frame,frame, mask=mask)
 
-    keypoints = detector.detect(mask)
-    res2 = cv2.drawKeypoints(res, keypoints, np.array([]),(0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    im2, contours, hierarchy = cv2.findContours(mask,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
+
+    maxarea = 0
+
+    try:
+        c = max(contours, key = cv2.contourArea)
+        if cv2.contourArea(c) > 10:
+            x,y,w,h = cv2.boundingRect(c)
+            cv2.rectangle(res,(x,y),(x+w,y+h),(0,255,0),2)
+            px = x + (w/2)
+            py = y + (h/2)
+            print(px,py)
+
+    except:
+        pass
+
     cv2.imshow('Live Feed',frame)
-    cv2.imshow('Isolated Blob' , res2)
+    cv2.imshow('Isolated Contour' , res)
     
     #lh = cv2.getTrackbarPos('lh', 'Isolated Blob')
     #uh = cv2.getTrackbarPos('uh', 'Isolated Blob')
@@ -71,16 +65,6 @@ while True:
     #ll = np.array([lh,ls,lv])
     #ul = np.array([uh,us,uv])
 
-    if flag == 0:
-        for i in keypoints:
-            x=int(i.pt[0]); y=int(i.pt[1])
-            print(x,y)
-            x3 = int(x/3)
-            y3 = 160-int(y/3)
-           # ard.write(str(x))
-            cv2.imshow('Plot', bg)
-            bg[y,x] = 0
-
     if cv2.waitKey(1) & 0xFF == ord(' '):
         flag = 1
     else:
@@ -90,5 +74,5 @@ while True:
         break
 
 cam.release()
-ard.close()
 cv2.destroyAllWindows()
+
